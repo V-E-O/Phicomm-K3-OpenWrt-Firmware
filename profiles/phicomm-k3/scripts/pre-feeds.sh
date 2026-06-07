@@ -17,11 +17,11 @@ append_feed_if_missing() {
 }
 
 echo '>>> Add Passwall Feed >>>'
-append_feed_if_missing 'src-git passwall_packages https://github.com/xiaorouji/openwrt-passwall-packages;main'
+append_feed_if_missing 'src-git passwall_packages https://github.com/openwrt-passwall/openwrt-passwall-packages;main'
 echo '<<< Completed Add Passwall Feed <<<'
 
 echo '>>> Clone Passwall LuCI App >>>'
-clone_repo 'https://github.com/xiaorouji/openwrt-passwall' 'main' 'package/luci-app-passwall'
+clone_repo 'https://github.com/openwrt-passwall/openwrt-passwall' 'main' 'package/luci-app-passwall'
 echo '<<< Completed Clone Passwall LuCI App <<<'
 
 echo '>>> Clone K3 Screen App >>>'
