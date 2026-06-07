@@ -137,7 +137,7 @@ build_firmware_verbose() {
   log_warn "Parallel build failed, retry with single job and verbose logs"
 
   ccache -s || true
-  make -j1 V=s
+  make -j1 V=sc
   ccache -s || true
 
   set_build_metadata
