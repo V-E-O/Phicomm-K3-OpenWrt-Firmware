@@ -1,27 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONFIG_GENERATE='package/base-files/files/bin/config_generate'
-AUTOCORE_INDEX='package/lean/autocore/files/arm/index.htm'
-ARGON_SCRIPT='package/lean/luci-theme-argon/htdocs/luci-static/argon/js/script.js'
-MINIUPNPD_CONFIG='feeds/packages/net/miniupnpd/files/upnpd.config'
-
+# Hostname
 if [[ -n "${MODIFY_HOSTNAME:-}" ]]; then
   echo '>>> Update Hostname >>>'
-  sed -i "s/hostname='OpenWrt'/hostname='${MODIFY_HOSTNAME}'/g" "${CONFIG_GENERATE}"
-  grep -n "hostname='${MODIFY_HOSTNAME}'" "${CONFIG_GENERATE}"
+  sed -i "s/hostname='OpenWrt'/hostname='${MODIFY_HOSTNAME}'/g" \
+    package/base-files/files/bin/config_generate
   echo '<<< Completed Update Hostname <<<'
 fi
 
-echo '>>> Remove Autocore Benchmark Display >>>'
-sed -i 's/ <%=luci.sys.exec("cat \/etc\/bench.log") or ""%>//g' "${AUTOCORE_INDEX}"
-echo '<<< Completed Remove Autocore Benchmark Display <<<'
-
-echo '>>> Remove Argon Console Log >>>'
-sed -i '/console.log(mainNodeName);/d' "${ARGON_SCRIPT}"
-echo '<<< Completed Remove Argon Console Log <<<'
-
-echo '>>> Update MiniUPnPd Lease Path >>>'
-sed -i 's/\/var\/upnp.leases/\/tmp\/upnp.leases/g' "${MINIUPNPD_CONFIG}"
-grep -n 'upnp_lease_file=/tmp/upnp.leases' "${MINIUPNPD_CONFIG}"
-echo '<<< Completed Update MiniUPnPd Lease Path <<<'
+# Kernel: BBR as default congestion control + FQ as default qdisc
+echo '>>> Configure Kernel Performance >>>'
+for cfg in target/linux/bcm53xx/config-*; do
+  grep -q 'CONFIG_TCP_CONG_BBR' "$cfg" || echo 'CONFIG_TCP_CONG_BBR=y' >> "$cfg"
+  grep -q 'CONFIG_DEFAULT_TCP_CONG' "$cfg" || echo 'CONFIG_DEFAULT_TCP_CONG="bbr"' >> "$cfg"
+  grep -q 'CONFIG_NET_SCH_FQ=y' "$cfg" || echo 'CONFIG_NET_SCH_FQ=y' >> "$cfg"
+  grep -q 'CONFIG_DEFAULT_NET_SCH' "$cfg" || echo 'CONFIG_DEFAULT_NET_SCH="fq"' >> "$cfg"
+done
+echo '<<< Completed Configure Kernel Performance <<<'
