@@ -29,6 +29,31 @@ Phicomm K3 (BCM47094) firmware built with official OpenWrt 25.12, compiled via G
 - NEON/VFP enabled (hardware AES acceleration)
 - BBR congestion control + FQ qdisc as kernel default
 
+## Usage Tips
+
+### WiFi Transmit Power
+
+LuCI → Network → Wireless → Edit → Advanced Settings → Transmit Power
+
+Or via startup script (System → Startup → Local Startup Script, before `exit 0`):
+```shell
+iwconfig wlan0 txpower 23
+iwconfig wlan1 txpower 23
+```
+`wlan0` = 2.4G, `wlan1` = 5G. Range: 23-27 recommended (max 31).
+
+### Network Acceleration
+
+BBR + FQ is enabled by default at kernel level (no manual config needed).
+
+For flow offload: LuCI → Network → Firewall → General Settings → enable "Software flow offloading".
+
+### Default Access
+
+- Address: `192.168.1.1`
+- User: `root`
+- Password: `password` (change after first login)
+
 ## Build
 
 Trigger manually via GitHub Actions (workflow_dispatch), or fork and push.
