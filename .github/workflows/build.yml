@@ -1,6 +1,8 @@
 name: Build Phicomm K3 Firmware
 
 on:
+  schedule:
+    - cron: '0 3 * * 1'  # Every Monday 03:00 UTC (11:00 CST)
   workflow_dispatch:
     inputs:
       upload_artifact:
