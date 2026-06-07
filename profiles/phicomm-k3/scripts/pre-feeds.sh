@@ -16,10 +16,13 @@ append_feed_if_missing() {
   grep -qxF "$line" feeds.conf.default || echo "$line" >> feeds.conf.default
 }
 
-echo '>>> Add Passwall Feeds >>>'
+echo '>>> Add Passwall Feed >>>'
 append_feed_if_missing 'src-git passwall_packages https://github.com/xiaorouji/openwrt-passwall-packages;main'
-append_feed_if_missing 'src-git passwall https://github.com/xiaorouji/openwrt-passwall;main'
-echo '<<< Completed Add Passwall Feeds <<<'
+echo '<<< Completed Add Passwall Feed <<<'
+
+echo '>>> Clone Passwall LuCI App >>>'
+clone_repo 'https://github.com/xiaorouji/openwrt-passwall' 'main' 'package/luci-app-passwall'
+echo '<<< Completed Clone Passwall LuCI App <<<'
 
 echo '>>> Clone K3 Screen App >>>'
 clone_repo 'https://github.com/yangxu52/luci-app-k3screenctrl.git' '' 'package/k3screenctrl-luci'
