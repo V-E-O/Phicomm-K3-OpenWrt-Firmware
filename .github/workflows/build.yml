@@ -141,6 +141,19 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.FIRMWARE_DIR }}
 
+      - name: "Artifacts: Collect Toolchain"
+        if: ${{ success() }}
+        shell: bash
+        run: |
+          bash scripts/ci/artifacts.sh collect-toolchain
+
+      - name: "Artifacts: Upload Toolchain"
+        if: ${{ success() && inputs.upload_artifact }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.TOOLCHAIN_NAME }}
+          path: ${{ env.TOOLCHAIN_ARCHIVE }}
+
       - name: "Release: Prepare Metadata"
         if: ${{ success() && inputs.create_release }}
         shell: bash

@@ -49,9 +49,40 @@ collect_firmware() {
   group_end
 }
 
+collect_toolchain() {
+  group_start "Artifacts: Collect Toolchain"
+
+  local toolchain_dir
+  toolchain_dir="$(find "${OPENWRT_ROOT}/staging_dir" -maxdepth 1 -type d -name 'toolchain-*' | head -n1)"
+
+  if [[ -z "$toolchain_dir" || ! -d "$toolchain_dir" ]]; then
+    log_error "Toolchain directory not found in staging_dir"
+    exit 1
+  fi
+
+  local toolchain_name
+  toolchain_name="$(basename "$toolchain_dir")"
+  local archive="${OPENWRT_ROOT}/bin/${toolchain_name}.tar.zst"
+
+  log_info "Packing toolchain: $toolchain_dir"
+  tar -C "${OPENWRT_ROOT}/staging_dir" -cf - "$toolchain_name" | zstd -T0 -3 -o "$archive"
+
+  local size
+  size="$(du -sh "$archive" | cut -f1)"
+  log_info "Toolchain archive: $archive ($size)"
+
+  append_env "TOOLCHAIN_ARCHIVE" "$archive"
+  append_env "TOOLCHAIN_NAME" "$toolchain_name"
+
+  group_end
+}
+
 case "${1:-}" in
   collect-firmware)
     collect_firmware
+    ;;
+  collect-toolchain)
+    collect_toolchain
     ;;
   *)
     log_error "Unknown command: ${1:-}"
