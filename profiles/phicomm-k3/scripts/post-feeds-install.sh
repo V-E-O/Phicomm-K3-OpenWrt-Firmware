@@ -9,6 +9,14 @@ if [[ -n "${MODIFY_HOSTNAME:-}" ]]; then
   echo '<<< Completed Update Hostname <<<'
 fi
 
+# Override bcm53xx target CPU_TYPE to enable NEON + hard-float
+# make defconfig reads CPU_TYPE from target/linux/bcm53xx/Makefile
+# and forces soft-float. Patch it at source so defconfig picks up +neon.
+echo '>>> Patch bcm53xx CPU_TYPE for NEON >>>'
+sed -i 's/CPU_TYPE:=cortex-a9$/CPU_TYPE:=cortex-a9+neon/' target/linux/bcm53xx/Makefile
+grep 'CPU_TYPE' target/linux/bcm53xx/Makefile
+echo '<<< Completed Patch bcm53xx CPU_TYPE <<<'
+
 # Kernel: Enable VFP/NEON + ARM NEON crypto acceleration
 # BCM4709A0 Cortex-A9 has NEON hardware, but all upstream bcm53xx
 # targets (OpenWrt/immortalwrt/LEDE) leave it disabled.
