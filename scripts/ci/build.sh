@@ -159,6 +159,15 @@ download_sources() {
 
   cd "$OPENWRT_ROOT"
   make defconfig
+
+  # Force disable SOFT_FLOAT - defconfig ignores .config seed for this
+  # because bcm53xx target historically defaults to soft-float
+  if grep -q "^CONFIG_SOFT_FLOAT=y" .config; then
+    log_warn "SOFT_FLOAT=y after defconfig, forcing to disabled"
+    sed -i 's/^CONFIG_SOFT_FLOAT=y$/# CONFIG_SOFT_FLOAT is not set/' .config
+    make defconfig
+  fi
+
   verify_kernel_config
   make download -j"$(nproc)"
 
