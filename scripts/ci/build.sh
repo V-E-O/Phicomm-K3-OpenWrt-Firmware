@@ -133,10 +133,17 @@ verify_kernel_config() {
   local cpu_type
   cpu_type="$(grep '^CONFIG_CPU_TYPE=' .config || true)"
   log_info "  CPU_TYPE: ${cpu_type:-not set}"
+  if [[ "$cpu_type" != *"neon"* ]]; then
+    log_error "  CPU_TYPE must include +neon!"
+    failed=1
+  fi
 
-  local soft_float
-  soft_float="$(grep 'CONFIG_SOFT_FLOAT' .config || true)"
-  log_info "  SOFT_FLOAT: ${soft_float:-not set (good)}"
+  if grep -q "^CONFIG_SOFT_FLOAT=y" .config; then
+    log_error "  SOFT_FLOAT=y detected! NEON will not work in userspace!"
+    failed=1
+  else
+    log_info "  SOFT_FLOAT: disabled (good)"
+  fi
 
   if [[ "$failed" -eq 1 ]]; then
     log_error "Kernel config verification FAILED"
