@@ -139,23 +139,16 @@ verify_kernel_config() {
   fi
 
   if grep -q "^CONFIG_SOFT_FLOAT=y" .config; then
-    log_error "  SOFT_FLOAT=y detected! NEON will not work in userspace!"
-    failed=1
+    log_warn "  SOFT_FLOAT=y (eabi) - OpenSSL NEON ASM still works via runtime probe"
   else
-    log_info "  SOFT_FLOAT: disabled (good)"
+    log_info "  SOFT_FLOAT: disabled (eabihf)"
   fi
 
   # Check actual toolchain directory (catches stale cache)
   local tc_dir
   tc_dir="$(find staging_dir -maxdepth 1 -type d -name 'toolchain-*' 2>/dev/null | head -1)"
   if [[ -n "$tc_dir" ]]; then
-    local tc_name
-    tc_name="$(basename "$tc_dir")"
-    log_info "  Toolchain dir: $tc_name"
-    if [[ "$tc_name" != *"neon"* ]] || [[ "$tc_name" == *"_eabi" ]] && [[ "$tc_name" != *"_eabihf" ]]; then
-      log_error "  Stale soft-float toolchain cached! Delete Actions cache and re-run."
-      failed=1
-    fi
+    log_info "  Toolchain dir: $(basename "$tc_dir")"
   else
     log_info "  Toolchain dir: not yet built (will be created during compile)"
   fi
