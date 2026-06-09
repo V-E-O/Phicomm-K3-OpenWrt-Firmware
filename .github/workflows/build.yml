@@ -82,7 +82,7 @@ jobs:
           path: |
             openwrt/build_dir/toolchain-*
             openwrt/staging_dir/toolchain-*
-          key: toolchain-${{ env.TARGET }}-${{ env.SUBTARGET }}-${{ env.TOOLCHAIN_HEAD }}
+          key: toolchain-${{ env.TARGET }}-${{ env.SUBTARGET }}-${{ env.TOOLCHAIN_HEAD }}-${{ env.CCACHE_HASH }}
 
       - name: "Cache: Restore Hostpkg"
         uses: actions/cache@v5
