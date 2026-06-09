@@ -9,13 +9,11 @@ if [[ -n "${MODIFY_HOSTNAME:-}" ]]; then
   echo '<<< Completed Update Hostname <<<'
 fi
 
-# Patch bcm53xx CPU_TYPE to cortex-a9+neon
-# This adds -mfpu=neon to CFLAGS. Userspace stays soft-float ABI (eabi)
-# which is fine - OpenSSL's NEON ASM uses hand-written instructions that
-# work regardless of float ABI, detected at runtime via SIGILL probe.
-echo '>>> Patch bcm53xx CPU_TYPE for NEON >>>'
+# Patch bcm53xx for hard-float + NEON userspace
+echo '>>> Patch bcm53xx target for NEON + hard-float >>>'
 sed -i 's/CPU_TYPE:=cortex-a9$/CPU_TYPE:=cortex-a9+neon/' target/linux/bcm53xx/Makefile
-grep 'CPU_TYPE' target/linux/bcm53xx/Makefile
+sed -i '/^FEATURES:=/ s/$/ fpu neon/' target/linux/bcm53xx/Makefile
+grep -E 'CPU_TYPE|FEATURES' target/linux/bcm53xx/Makefile
 echo '<<< Completed Patch bcm53xx CPU_TYPE <<<'
 
 # Kernel: Enable VFP/NEON + ARM NEON crypto acceleration

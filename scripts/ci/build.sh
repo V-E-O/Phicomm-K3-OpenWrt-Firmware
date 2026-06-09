@@ -139,7 +139,8 @@ verify_kernel_config() {
   fi
 
   if grep -q "^CONFIG_SOFT_FLOAT=y" .config; then
-    log_warn "  SOFT_FLOAT=y (eabi) - OpenSSL NEON ASM still works via runtime probe"
+    log_error "  SOFT_FLOAT=y detected! Must be disabled for eabihf."
+    failed=1
   else
     log_info "  SOFT_FLOAT: disabled (eabihf)"
   fi
