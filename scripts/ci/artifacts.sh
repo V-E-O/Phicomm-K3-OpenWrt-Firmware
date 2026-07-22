@@ -62,19 +62,6 @@ collect_toolchain() {
 
   local toolchain_name
   toolchain_name="$(basename "$toolchain_dir")"
-  # Fix naming: OpenWrt uses 'eabi' in dirname even with --with-float=hard.
-  # Rename to 'eabihf' if the compiler actually uses hard-float.
-  local gcc_bin
-  gcc_bin="$(find "$toolchain_dir/bin" -name '*-gcc' -type f | head -1)"
-  if [[ -n "$gcc_bin" ]] && "$gcc_bin" -Q --help=target 2>&1 | grep -q 'mfloat-abi=.*hard'; then
-    local fixed_name="${toolchain_name/musl_eabi/musl_eabihf}"
-    if [[ "$fixed_name" != "$toolchain_name" ]]; then
-      log_info "Renaming toolchain: $toolchain_name -> $fixed_name (actual ABI is hard-float)"
-      mv "${OPENWRT_ROOT}/staging_dir/${toolchain_name}" "${OPENWRT_ROOT}/staging_dir/${fixed_name}"
-      toolchain_dir="${OPENWRT_ROOT}/staging_dir/${fixed_name}"
-      toolchain_name="$fixed_name"
-    fi
-  fi
   local archive="${OPENWRT_ROOT}/bin/${toolchain_name}.tar.zst"
 
   log_info "Packing toolchain: $toolchain_dir"

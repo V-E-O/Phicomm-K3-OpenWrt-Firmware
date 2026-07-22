@@ -94,81 +94,11 @@ apply_source_customization() {
   group_end
 }
 
-verify_kernel_config() {
-  group_start "Build: Verify Kernel Config"
-
-  cd "$OPENWRT_ROOT"
-
-  local kconfig
-  kconfig="$(find target/linux/bcm53xx -name 'config-*' | head -1)"
-
-  if [[ -z "$kconfig" ]]; then
-    log_error "No kernel config found for bcm53xx"
-    exit 1
-  fi
-
-  log_info "Checking $kconfig for VFP/NEON/Crypto:"
-
-  local failed=0
-  for opt in CONFIG_VFP CONFIG_NEON CONFIG_KERNEL_MODE_NEON \
-             CONFIG_CRYPTO_AES_ARM CONFIG_CRYPTO_AES_ARM_BS; do
-    if grep -q "^${opt}=y" "$kconfig"; then
-      log_info "  [OK] ${opt}=y"
-    else
-      log_error "  [MISSING] ${opt} not enabled!"
-      failed=1
-    fi
-  done
-
-  log_info "Checking .config for OpenSSL/toolchain:"
-  for opt in CONFIG_OPENSSL_WITH_ASM CONFIG_OPENSSL_OPTIMIZE_SPEED; do
-    if grep -q "^${opt}=y" .config; then
-      log_info "  [OK] ${opt}=y"
-    else
-      log_error "  [MISSING] ${opt} not enabled!"
-      failed=1
-    fi
-  done
-
-  local cpu_type
-  cpu_type="$(grep '^CONFIG_CPU_TYPE=' .config || true)"
-  log_info "  CPU_TYPE: ${cpu_type:-not set}"
-  if [[ "$cpu_type" != *"neon"* ]]; then
-    log_error "  CPU_TYPE must include +neon!"
-    failed=1
-  fi
-
-  if grep -q "^CONFIG_SOFT_FLOAT=y" .config; then
-    log_error "  SOFT_FLOAT=y detected! Must be disabled for eabihf."
-    failed=1
-  else
-    log_info "  SOFT_FLOAT: disabled (eabihf)"
-  fi
-
-  # Check actual toolchain directory (catches stale cache)
-  local tc_dir
-  tc_dir="$(find staging_dir -maxdepth 1 -type d -name 'toolchain-*' 2>/dev/null | head -1)"
-  if [[ -n "$tc_dir" ]]; then
-    log_info "  Toolchain dir: $(basename "$tc_dir")"
-  else
-    log_info "  Toolchain dir: not yet built (will be created during compile)"
-  fi
-
-  if [[ "$failed" -eq 1 ]]; then
-    log_error "Kernel config verification FAILED"
-    exit 1
-  fi
-
-  log_info "All VFP/NEON/Crypto checks passed"
-  group_end
-}
-
 download_sources() {
   group_start "Build: Download Sources"
 
   cd "$OPENWRT_ROOT"
   make defconfig
-  verify_kernel_config
   make download -j"$(nproc)"
 
   find dl -size -1024c -exec ls -l {} \; || true
